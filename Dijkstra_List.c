@@ -1,8 +1,11 @@
 #include<stdio.h>
-#include<malloc.h>
-#define M 20
-#define INF 1000
-
+#include<stdlib.h>
+#define N 10
+#define inf 1000
+/*
+** Program to find shortest path using Dijkstra Algorith using Adjacency List 
+** Made by - Abhishek Chand [15CS-01]
+*/
 typedef struct NODE
 {
 	int v;
@@ -13,21 +16,53 @@ typedef struct NODE
 typedef struct HeapNode
 {
 	int v;
-	int dis;
+	int key;
 }Hnode;
 
-int minvert(int* dist,int* visit,int n)
-{ 
-	int i,min=INF,u;
-	for(i=1;i<n;i++)
-	{
-		if(visit[i]==0&&dist[i]<min)
-		{
-			u=i;
-			min=dist[i];
-		}
-			
+void decreaseKey(Hnode *H, int i, int newKey, int s, int *pos) {
+	int p = pos[i], v; 
+	Hnode x = H[p];
+	x.key = newKey;
+	while(p > 1 && x.key < H[p/2].key) {
+		H[p] = H[p/2];
+		v = H[p].v;
+		pos[v] = p;
+		p = p/2;
 	}
+	H[p] = x;
+	pos[i] = p;
+}
+
+void minHeapify(Hnode *H, int i, int s, int *pos) {
+	Hnode x = H[i];
+	int l, r, min, v;
+	while((l = 2*i) <= s) {
+		r = l+1;
+		if(r <= s && H[r].key < H[l].key)
+			min = r;
+		else
+			min = l;
+		if(H[min].key < x.key) {
+			H[i] = H[min];
+			v = H[i].v;
+			pos[v] = i;
+			i = min;
+			
+		}
+		else
+			break;
+	}
+	H[i] = x;
+	v = H[i].v;
+	pos[v] = i;
+}
+
+int extractMin(Hnode *H, int *s, int *pos) {
+	int u = H[1].v;
+	H[1] = H[*s];
+	pos[H[1].v] = 1;
+	*s = *s-1;
+	minHeapify(H, 1, *s, pos);
 	return u;
 }
 
@@ -44,7 +79,7 @@ void printpath(int *pred,int x)
 
 void Dijkstra(node *L[], int n)
 {
-	int u,v,i;
+	int u,v,w,i;
 	int *dis,*pre,*vis,pos[n+1];
 	dis=(int *)malloc((n+1)*sizeof(int));
 	pre=(int *)malloc((n+1)*sizeof(int));
@@ -53,35 +88,36 @@ void Dijkstra(node *L[], int n)
 	int Hsize = n;
 	Hnode *H = (Hnode *)malloc((Hsize+1)*sizeof(Hnode));
 	
-	for(i=1;i<n+1;i++)
+	for(i = 1; i <= Hsize; i++)
 	{
-		dis[i]=H[i].dis=INF;
-		pre[i]=-1;
-		vis[i]=0;
+		pre[i] = -1;
+		vis[i] = 0;
+		dis[i] = H[i].key = inf;
+		H[i].v = i;
+		pos[i] = i;
 	}
 	
-	dis[1]=H[1].dis=0; //assuming source vertex is 1
+	dis[1]=H[1].key=0; //assuming source vertex is 1
 	
-	for(i=1;i<=n;i++)
+	while(Hsize)
 	{
-		u=minvert(dis,vis,n+1);
-		vis[u]=1;
-		
-		for(v=1;v<n+1;v++)
-		{
-			if(A[u][v]>-1&&vis[v]==0)
+		u = extractMin(H, &Hsize, pos);
+		vis[u] = 1;
+		node *q = L[u];
+		while(q) {
+			v = q->v;
+			w = q->w; 
+			if( vis[v] == 0 && dis[v] > dis[u] + w )
 			{
-				if(dis[v]>dis[u]+A[u][v])
-				{
-					dis[v]=dis[u]+A[u][v];
-					pre[v]=u;
-				}
+				dis[v] = dis[u] + w;
+				pre[v] = u;
+				decreaseKey(H, v, w, Hsize, pos);
 			}
+			q = q->next;
 		}
-		
 	}
 	
-	printf("\nDistance");
+	printf("\n\nDistance");
 	for(i=1;i<n+1;i++)
 	{
 		printf("\n%d %d",i,dis[i]);
@@ -92,7 +128,8 @@ void Dijkstra(node *L[], int n)
 
 int main()
 {
-	printf("\nNo. of vertices:");
+	int i,j,k,w,n,e;
+	printf("No. of vertices:");
 	scanf("%d",&n);
 	printf("\nNo. of edges:");
 	scanf("%d",&e);
@@ -109,7 +146,7 @@ int main()
 		List[i] = t;
 	}
 
-	printf("\nInput Graph:\n");
+	printf("\nInput Graph:");
 	for(i=1;i<n+1;i++)
 	{
 		printf("\n\n%d",i);
