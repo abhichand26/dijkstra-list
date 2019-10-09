@@ -2,10 +2,12 @@
 #include<stdlib.h>
 #define N 10
 #define inf 1000
+
 /*
 ** Program to find shortest path using Dijkstra Algorith using Adjacency List 
-** Made by - Abhishek Chand [15CS-01]
+** Made by - Abhishek Chand
 */
+
 typedef struct NODE
 {
 	int v;
