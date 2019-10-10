@@ -4,7 +4,7 @@
 #define inf 1000
 
 /*
-** Program to find shortest path using Dijkstra Algorith using Adjacency List 
+** Program to find shortest path using Dijkstra Algorithm using Adjacency List 
 ** Made by - Abhishek Chand
 */
 
